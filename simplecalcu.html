@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>科学计算器</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f0f2f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .calculator {
+            background: #333;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            width: 320px;
+        }
+
+        #display {
+            background: #98fb98;
+            height: 60px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 2em;
+            text-align: right;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        button {
+            border: none;
+            padding: 20px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        .number {
+            background: #4d4d4d;
+            color: white;
+        }
+
+        .operator {
+            background: #ff9500;
+            color: white;
+        }
+
+        .function {
+            background: #a6a6a6;
+            color: black;
+        }
+
+        .span-2 {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div id="display">0</div>
+        <div class="buttons">
+            <button class="function" onclick="clearDisplay()">AC</button>
+            <button class="function" onclick="toggleSign()">±</button>
+            <button class="function" onclick="deleteLast()">DEL</button>
+            <button class="operator" onclick="appendOperator('/')">÷</button>
+            
+            <button class="number" onclick="appendNumber('7')">7</button>
+            <button class="number" onclick="appendNumber('8')">8</button>
+            <button class="number" onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="appendOperator('*')">×</button>
+            
+            <button class="number" onclick="appendNumber('4')">4</button>
+            <button class="number" onclick="appendNumber('5')">5</button>
+            <button class="number" onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="appendOperator('-')">-</button>
+            
+            <button class="number" onclick="appendNumber('1')">1</button>
+            <button class="number" onclick="appendNumber('2')">2</button>
+            <button class="number" onclick="appendNumber('3')">3</button>
+            <button class="operator" onclick="appendOperator('+')">+</button>
+            
+            <button class="number span-2" onclick="appendNumber('0')">0</button>
+            <button class="number" onclick="appendDecimal()">.</button>
+            <button class="operator" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = '0';
+        let firstOperand = null;
+        let operator = null;
+        let shouldResetScreen = false;
+
+        const display = document.getElementById('display');
+
+        function updateDisplay() {
+            display.textContent = currentInput;
+        }
+
+        function appendNumber(number) {
+            if (shouldResetScreen) {
+                currentInput = '0';
+                shouldResetScreen = false;
+            }
+            currentInput = currentInput === '0' ? number : currentInput + number;
+            updateDisplay();
+        }
+
+        function appendDecimal() {
+            if (!currentInput.includes('.')) {
+                currentInput += '.';
+                updateDisplay();
+            }
+        }
+
+        function toggleSign() {
+            currentInput = (parseFloat(currentInput) * -1).toString();
+            updateDisplay();
+        }
+
+        function clearDisplay() {
+            currentInput = '0';
+            firstOperand = null;
+            operator = null;
+            shouldResetScreen = false;
+            updateDisplay();
+        }
+
+        function deleteLast() {
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = '0';
+            }
+            updateDisplay();
+        }
+
+        function appendOperator(newOperator) {
+            const inputValue = parseFloat(currentInput);
+            
+            if (operator && !shouldResetScreen) {
+                calculate();
+            }
+            
+            firstOperand = inputValue;
+            operator = newOperator;
+            shouldResetScreen = true;
+        }
+
+        function calculate() {
+            if (operator === null || shouldResetScreen) return;
+            
+            const inputValue = parseFloat(currentInput);
+            let result;
+            
+            switch (operator) {
+                case '+':
+                    result = firstOperand + inputValue;
+                    break;
+                case '-':
+                    result = firstOperand - inputValue;
+                    break;
+                case '*':
+                    result = firstOperand * inputValue;
+                    break;
+                case '/':
+                    if (inputValue === 0) {
+                        alert("不能除以零！");
+                        clearDisplay();
+                        return;
+                    }
+                    result = firstOperand / inputValue;
+                    break;
+            }
+            
+            currentInput = Number.isInteger(result) ? result.toString() : result.toFixed(4).replace(/\.?0+$/, '');
+            operator = null;
+            firstOperand = null;
+            shouldResetScreen = true;
+            updateDisplay();
+        }
+    </script>
+</body>
+</html>
